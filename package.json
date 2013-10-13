@@ -1,0 +1,36 @@
+{
+  "name": "mimosa-sprite",
+  "version": "0.1.0",
+  "homepage": "https://github.com/dbashford/mimosa-sprite",
+  "author": "David Bashford",
+  "description": "A module for Mimosa to generate sprites",
+  "contributors": [
+    {
+      "name": "David Bashford",
+      "email": "dbashford@hotmail.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dbashford/mimosa-sprite"
+  },
+  "keywords": [
+    "mimosa",
+    "mmodule",
+    "sprites",
+    "stylus"
+  ],
+  "dependencies": {
+    "logmimosa": "0.5.0",
+    "node-sprite-generator": "0.2.0",
+    "wrench": "1.5.1"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.10"
+  },
+  "main": "./lib/index",
+  "scripts": {
+    "prepublish": "mimosa build"
+  }
+}
