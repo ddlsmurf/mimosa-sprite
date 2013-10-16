@@ -1,34 +1,31 @@
 var fs = require('fs'),
     path = require('path'),
+
     nsg = require('node-sprite-generator'),
+    _ = require('lodash'),
+    async = require('async'),
     logger = require('logmimosa'),
     wrench = require('wrench'),
+
     config = require('./config');
 
 var _makeDirectory = function ( dir ) {
   if (!fs.existsSync(dir)) {
-    logger.debug("Making folder [[ " + dir + " ]]")
+    logger.debug("Making folder [[ " + dir + " ]]");
     wrench.mkdirSyncRecursive(dir, 0777);
   }
-}
+};
 
 var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
-
-  // Get compiled path
-  var spriteOutPath = folderPath.replace( mimosaConfig.watch.sourceDir, mimosaConfig.watch.compiledDir );
-
-  // Get just the direectory name
-  spriteOutPath = path.dirname( spriteOutPath );
-
-  var folderName = path.basename( folderPath );
-
   // file name is folder name plus .png
+  var folderName = path.basename( folderPath );
   var spriteFileName = folderName + ".png";
 
-  // build full output file
-  var spriteOutFile = path.join( spriteOutPath, spriteFileName );
+  // out file for sprite images
+  var spriteOutFile = path.join( mimosaConfig.sprite.outDirFull, spriteFileName );
 
-  var stylesheetOutFile = path.join( mimosaConfig.sprite.stylesheetDirFull, folderName );
+  // out file stylesheets
+  var stylesheetOutFile = path.join( mimosaConfig.sprite.stylesheetOutDirFull, folderName );
 
   if (mimosaConfig.sprite.isStylus) {
     stylesheetOutFile = stylesheetOutFile + ".styl";
@@ -46,36 +43,39 @@ var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
     nsgConfig.src.push(path.join(mimosaConfig.sprite.commonDirFull, "*.png").replace(mimosaConfig.root + path.sep, ""));
   }
 
-  _makeDirectory(path.dirname(spriteOutFile));
+  if ( typeof mimosaConfig.sprite.options === 'function') {
+    // call function, get object
+  } else {
+    // merge objects
+  }
 
-  //console.log(nsgConfig);
+  _makeDirectory( path.dirname( spriteOutFile ) );
 
   return nsgConfig;
 };
 
-var _runSpriteGenerator = function (generatorConfig) {
-
-  console.log(generatorConfig)
-
-  nsg(generatorConfig, function (err) {
-    if (err) {
-      logger.error("Error generating sprite for config [[ " + generatorConfig + " ]]");
+var _runSpriteGenerator = function ( generatorConfig, cb ) {
+  console.log(generatorConfig);
+  nsg( generatorConfig, function ( err ) {
+    if ( err ) {
+      logger.error( "Error generating sprite for config [[ " + generatorConfig + " ]]" );
     } else {
-      logger.success("Sprite generated [[ " + generatorConfig.spritePath + " ]]");
+      logger.success( "Sprite generated [[ " + generatorConfig.spritePath + " ]]" );
     }
+    cb();
   });
 };
 
 var _getAllSpriteConfigs = function ( mimosaConfig ) {
-  var configs = wrench.readdirSyncRecursive( mimosaConfig.sprite.imageDirFull ).map( function( shortPath ) {
+  var configs = wrench.readdirSyncRecursive( mimosaConfig.sprite.inDirFull ).map( function( shortPath ) {
     // build full path
-    return path.join(mimosaConfig.sprite.imageDirFull, shortPath);
+    return path.join(mimosaConfig.sprite.inDirFull, shortPath);
   }).filter( function filterDir( fullpath ) {
     // only care about directories
     return fs.statSync(fullpath).isDirectory();
   }).filter( function filterRootDir( fullpath ) {
     // only care about root directories
-    return (path.dirname(fullpath) === mimosaConfig.sprite.imageDirFull);
+    return (path.dirname(fullpath) === mimosaConfig.sprite.inDirFull);
   }).filter( function filterCommon( fullpath ) {
     // no common directory
     return (fullpath !== mimosaConfig.sprite.commonDirFull);
@@ -103,21 +103,23 @@ var _getAllSpriteConfigs = function ( mimosaConfig ) {
 
 var _generateSprites = function ( mimosaConfig, next ) {
 
-  if ( !fs.existsSync( mimosaConfig.sprite.imageDirFull ) ) {
-    logger.error("Could not find sprite.imageDir directory at [[ " + mimosaConfig.sprite.imageDirFull + " ]]");
+  if ( !fs.existsSync( mimosaConfig.sprite.inDirFull ) ) {
+    logger.error("Could not find sprite.inDir directory at [[ " + mimosaConfig.sprite.inDirFull + " ]]");
     if (next) {
       next();
     }
     return;
   }
 
-  var configs = _getAllSpriteConfigs( mimosaConfig )
+  var configs = _getAllSpriteConfigs( mimosaConfig );
 
   if (configs.length > 0) {
-    _makeDirectory(mimosaConfig.sprite.stylesheetDirFull);
+    _makeDirectory( mimosaConfig.sprite.stylesheetOutDirFull );
   }
 
-  _runSpriteGenerator(configs[0]);
+  async.eachSeries(configs, function(config, cb) {
+    _runSpriteGenerator(config, cb);
+  });
 
   if (next) {
     next();
@@ -136,7 +138,6 @@ var registerCommand = function ( program, retrieveConfig ) {
 };
 
 module.exports = {
-  //registration:    registration,
   registerCommand: registerCommand,
   defaults:        config.defaults,
   placeholder:     config.placeholder,
