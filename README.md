@@ -4,6 +4,8 @@ mimosa-sprite
 
 This is a module that will generate [CSS sprites](http://css-tricks.com/css-sprites/) and corresponding stylesheets for your Mimosa project.
 
+For an example Mimosa app that uses this module, checkout the [MimosaSpriteExample](https://github.com/dbashford/MimosaSpriteExample) project.
+
 For more information regarding Mimosa, see http://mimosa.io.
 
 ## Usage
