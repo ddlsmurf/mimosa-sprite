@@ -47,7 +47,7 @@ var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
   if ( typeof mimosaConfig.sprite.options === 'function') {
     nsgConfig = mimosaConfig.sprite.options(nsgConfig);
   } else {
-    nsgConfig = _.extend(nsgConfig, mimosaConfig.sprite.options)
+    nsgConfig = _.extend(nsgConfig, mimosaConfig.sprite.options);
   }
 
   _makeDirectory( path.dirname( spriteOutFile ) );
