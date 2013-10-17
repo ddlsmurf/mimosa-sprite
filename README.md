@@ -44,4 +44,9 @@ sprite:
 ## Example Config
 
 ```
+sprite:
+  options:
+    layout: 'horizontal'
 ```
+
+* `sprite.options.layout` is a pass-through to node-sprite-generator's [layout](https://github.com/selaux/node-sprite-generator#optionslayout) config.  This is one example of providing config through to node-sprite-generator.
