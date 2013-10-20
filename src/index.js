@@ -45,7 +45,7 @@ var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
 
   // perform overrides
   if ( typeof mimosaConfig.sprite.options === 'function') {
-    nsgConfig = mimosaConfig.sprite.options(nsgConfig);
+    mimosaConfig.sprite.options(nsgConfig);
   } else {
     nsgConfig = _.extend(nsgConfig, mimosaConfig.sprite.options);
   }
@@ -56,6 +56,11 @@ var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
 };
 
 var _runSpriteGenerator = function ( generatorConfig, cb ) {
+  if ( logger.isDebug ) {
+    logger.debug( "Generating sprite with config:" )
+    logger.debug( JSON.stringify( generatorConfig, null, 2 ) )
+  }
+
   nsg( generatorConfig, function ( err ) {
     if ( err ) {
       logger.error( "Error generating sprite for config [[ " + generatorConfig + " ]]" );
@@ -95,7 +100,7 @@ var _getAllSpriteConfigs = function ( mimosaConfig ) {
 
     return false;
   }).map( function createSpriteConfigForFolder( fullpath ) {
-    return _buildSpriteConfig(mimosaConfig, fullpath);
+    return _buildSpriteConfig( mimosaConfig, fullpath );
   });
 
   return configs;
@@ -104,8 +109,8 @@ var _getAllSpriteConfigs = function ( mimosaConfig ) {
 var _generateSprites = function ( mimosaConfig, next ) {
 
   if ( !fs.existsSync( mimosaConfig.sprite.inDirFull ) ) {
-    logger.error("Could not find sprite.inDir directory at [[ " + mimosaConfig.sprite.inDirFull + " ]]");
-    if (next) {
+    logger.error( "Could not find sprite.inDir directory at [[ " + mimosaConfig.sprite.inDirFull + " ]]" );
+    if ( next ) {
       next();
     }
     return;
@@ -117,11 +122,11 @@ var _generateSprites = function ( mimosaConfig, next ) {
     _makeDirectory( mimosaConfig.sprite.stylesheetOutDirFull );
   }
 
-  async.eachSeries(configs, function(config, cb) {
-    _runSpriteGenerator(config, cb);
+  async.eachSeries( configs, function( config, cb ) {
+    _runSpriteGenerator( config, cb );
   });
 
-  if (next) {
+  if ( next ) {
     next();
   }
 };
@@ -129,8 +134,14 @@ var _generateSprites = function ( mimosaConfig, next ) {
 var registerCommand = function ( program, retrieveConfig ) {
   program
     .command( 'sprite' )
+    .option("-D, --debug", "run in debug mode")
     .description( "Generate image sprites for your Mimosa application" )
-    .action( function(){
+    .action( function( opts ){
+      if (opts.debug) {
+        logger.setDebug();
+        process.env.DEBUG = true;
+      }
+
       retrieveConfig( false, function( mimosaConfig ) {
         _generateSprites( mimosaConfig );
       });
