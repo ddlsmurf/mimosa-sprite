@@ -36,7 +36,7 @@ If you are building many sprites, and those sprites have a set of images in comm
 
 ## Default Config
 
-```
+```coffee
 spritesmith:
   inDir: "images/sprite"
   outDir: "images"
@@ -61,7 +61,7 @@ spritesmith:
 If using stylus 0.39.1, you can handle retina sprites by generating a hash
 variable. Create one sprite called `sprites` and another called `sprites@2x`.
 
-```
+```coffee
 spritesmith:
   inDir: '../sprites'
   stylesheetOutDir: 'stylesheets'
