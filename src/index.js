@@ -76,7 +76,7 @@ var _runJSON2CSS = function ( generatorConfig, images ) {
   spriteName = safeBasenameWithoutExtension(generatorConfig.stylesheetPath);
   formatOptions.formatOpts = _.extend({
     spriteName: spriteName,
-  }, json2cssImageCommon, formatOptions.formatOpts)
+  }, json2cssImageCommon, formatOptions.formatOpts);
   for (var filename in coordinates)
     if (coordinates.hasOwnProperty(filename)) {
       var imageObject = coordinates[filename];
@@ -88,12 +88,12 @@ var _runJSON2CSS = function ( generatorConfig, images ) {
   }
   fs.writeFileSync(generatorConfig.stylesheetPath, json2css(json2cssImages, formatOptions));
   logger.success( "Stylesheet generated [[ " + generatorConfig.stylesheetPath + " ]]" );
-}
+};
 
 var _runSpriteGenerator = function ( generatorConfig, cb ) {
   if ( logger.isDebug ) {
-    logger.debug( "Generating sprite with config:" )
-    logger.debug( JSON.stringify( generatorConfig, null, 2 ) )
+    logger.debug( "Generating sprite with config:" );
+    logger.debug( JSON.stringify( generatorConfig, null, 2 ) );
   }
 
   nsg( generatorConfig, function ( err, res ) {
@@ -105,7 +105,7 @@ var _runSpriteGenerator = function ( generatorConfig, cb ) {
       fs.writeFileSync(generatorConfig.spritePath, res.image, 'binary');
       delete res.image;
       logger.success( "Sprite generated [[ " + generatorConfig.spritePath + " ]]" );
-      _runJSON2CSS( generatorConfig, res )
+      _runJSON2CSS( generatorConfig, res );
     }
     cb();
   });
