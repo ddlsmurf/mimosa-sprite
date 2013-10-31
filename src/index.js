@@ -1,11 +1,14 @@
 var fs = require('fs'),
     path = require('path'),
 
-    nsg = require('node-sprite-generator'),
+    nsg = require('spritesmith'),
     _ = require('lodash'),
     async = require('async'),
     logger = require('logmimosa'),
     wrench = require('wrench'),
+    glob = require('glob'),
+    url = require('url2'),
+    json2css = require('json2css'),
 
     config = require('./config');
 
@@ -34,7 +37,7 @@ var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
   }
 
   var nsgConfig = {
-    src: [path.join(folderPath, "*.png").replace(mimosaConfig.root + path.sep, "")],
+    src: glob.sync(path.join(folderPath, "*.png").replace(mimosaConfig.root + path.sep, "")),
     spritePath: spriteOutFile.replace(mimosaConfig.root + path.sep, ""),
     stylesheetPath: stylesheetOutFile.replace(mimosaConfig.root + path.sep, "")
   };
@@ -55,17 +58,54 @@ var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
   return nsgConfig;
 };
 
+var _runJSON2CSS = function ( generatorConfig, images ) {
+  var formatOptions = _.extend({
+      'format': 'stylus'
+  }, generatorConfig.json2css),
+  json2cssImages = [],
+  json2cssImageCommon = {
+    total_width: images.properties.width,
+    total_height: images.properties.height,
+    image: url.relative(generatorConfig.stylesheetPath, generatorConfig.spritePath)
+  },
+  coordinates = images.coordinates,
+  safeBasenameWithoutExtension = function (name) { return path.basename(name).replace(/\.\w+$/, '').replace(/[^a-z0-9]+/gi, '_'); },
+  renamer = (generatorConfig.json2css || {}).renamer || function (name, sprite) {
+    return sprite + '_' + name;
+  },
+  spriteName = safeBasenameWithoutExtension(generatorConfig.stylesheetPath);
+  formatOptions.formatOpts = _.extend({
+    spriteName: spriteName,
+  }, json2cssImageCommon, formatOptions.formatOpts)
+  for (var filename in coordinates)
+    if (coordinates.hasOwnProperty(filename)) {
+      var imageObject = coordinates[filename];
+      json2cssImages.push(_.extend(
+        coordinates[filename],
+        json2cssImageCommon, {
+        name: renamer(safeBasenameWithoutExtension(filename), spriteName, filename)
+      }));
+  }
+  fs.writeFileSync(generatorConfig.stylesheetPath, json2css(json2cssImages, formatOptions));
+  logger.success( "Stylesheet generated [[ " + generatorConfig.stylesheetPath + " ]]" );
+}
+
 var _runSpriteGenerator = function ( generatorConfig, cb ) {
   if ( logger.isDebug ) {
     logger.debug( "Generating sprite with config:" )
     logger.debug( JSON.stringify( generatorConfig, null, 2 ) )
   }
 
-  nsg( generatorConfig, function ( err ) {
+  nsg( generatorConfig, function ( err, res ) {
+
     if ( err ) {
       logger.error( "Error generating sprite for config [[ " + generatorConfig + " ]]" );
+      logger.error( err );
     } else {
+      fs.writeFileSync(generatorConfig.spritePath, res.image, 'binary');
+      delete res.image;
       logger.success( "Sprite generated [[ " + generatorConfig.spritePath + " ]]" );
+      _runJSON2CSS( generatorConfig, res )
     }
     cb();
   });
@@ -117,11 +157,16 @@ var _generateSprites = function ( mimosaConfig, next ) {
   }
 
   var configs = _getAllSpriteConfigs( mimosaConfig );
-
   if (configs.length > 0) {
     _makeDirectory( mimosaConfig.sprite.stylesheetOutDirFull );
   }
-
+  var templates = ((mimosaConfig.sprite.options || {}).json2css || {}).templates;
+  if (templates) {
+    delete mimosaConfig.sprite.options.json2css.templates;
+    for (var name in templates)
+      if (templates.hasOwnProperty(name))
+        json2css.addMustacheTemplate(name, templates[name]);
+  }
   async.eachSeries( configs, function( config, cb ) {
     _runSpriteGenerator( config, cb );
   });
@@ -133,7 +178,7 @@ var _generateSprites = function ( mimosaConfig, next ) {
 
 var registerCommand = function ( program, retrieveConfig ) {
   program
-    .command( 'sprite' )
+    .command( 'spritesmith' )
     .option("-D, --debug", "run in debug mode")
     .description( "Generate image sprites for your Mimosa application" )
     .action( function( opts ){
@@ -143,6 +188,7 @@ var registerCommand = function ( program, retrieveConfig ) {
       }
 
       retrieveConfig( false, function( mimosaConfig ) {
+
         _generateSprites( mimosaConfig );
       });
     });

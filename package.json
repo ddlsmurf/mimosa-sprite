@@ -1,18 +1,21 @@
 {
-  "name": "mimosa-sprite",
-  "version": "0.1.2",
-  "homepage": "https://github.com/dbashford/mimosa-sprite",
+  "name": "mimosa-spritesmith",
+  "version": "0.0.1",
+  "homepage": "https://github.com/ddlsmurf/mimosa-spritesmith",
   "author": "David Bashford",
   "description": "A module for Mimosa to generate sprites and corresponding Stylus/CSS",
   "contributors": [
     {
       "name": "David Bashford",
       "email": "dbashford@hotmail.com"
+    },
+    {
+      "name": "Eric Doughty-Papassideris"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/dbashford/mimosa-sprite"
+    "url": "https://github.com/ddlsmurf/mimosa-spritesmith"
   },
   "keywords": [
     "mimosa",
@@ -22,7 +25,10 @@
   ],
   "dependencies": {
     "logmimosa": "0.5.0",
-    "node-sprite-generator": "0.2.1",
+    "spritesmith": "",
+    "json2css": "",
+    "glob": "",
+    "url2": "",
     "wrench": "1.5.1",
     "lodash": "2.2.1",
     "async": "0.2.9"
