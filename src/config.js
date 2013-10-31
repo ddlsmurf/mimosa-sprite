@@ -5,20 +5,24 @@ var path = require( 'path' ),
 
 exports.defaults = function() {
   return {
-    sprite: {
+    spritesmith: {
       inDir: "images/sprite",
       outDir: "images",
       commonDir: "common",
       stylesheetOutDir: "stylesheets/sprite",
       isCSS: false,
       isStylus: true,
-      options: {}
+      options: {
+        json2css: {
+          formatOpts : {}
+        }
+      }
     }
   };
 };
 
 exports.placeholder = function () {
-   var ph = "  # sprite:                     #\n" +
+   var ph = "  # spritesmith:                     #\n" +
       "    # inDir: \"images/sprite\" # Folder inside which are the images to be sprited. Every folder\n" +
       "                                # at the root of this folder will generate a single sprite. This\n" +
       "                                # path is relative to watch.sourceDir, which defaults to 'assets'\n" +
@@ -47,36 +51,36 @@ exports.placeholder = function () {
 
 exports.validate = function ( config, validators ) {
   var errors = [];
-  if ( validators.ifExistsIsObject( errors, "sprite config", config.sprite ) ) {
-    if ( validators.ifExistsIsString( errors, "sprite.inDir", config.sprite.inDir ) ) {
-      config.sprite.inDirFull = path.join( config.watch.sourceDir, config.sprite.inDir );
+  if ( validators.ifExistsIsObject( errors, "spritesmith config", config.spritesmith ) ) {
+    if ( validators.ifExistsIsString( errors, "spritesmith.inDir", config.spritesmith.inDir ) ) {
+      config.spritesmith.inDirFull = path.join( config.watch.sourceDir, config.spritesmith.inDir );
 
-      if ( validators.ifExistsIsString( errors, "sprite.commonDir", config.sprite.commonDir ) ) {
-        config.sprite.commonDirFull = path.join( config.sprite.inDirFull, config.sprite.commonDir );
+      if ( validators.ifExistsIsString( errors, "spritesmith.commonDir", config.spritesmith.commonDir ) ) {
+        config.spritesmith.commonDirFull = path.join( config.spritesmith.inDirFull, config.spritesmith.commonDir );
 
         // If it doesnt exist, nuke it
-        if ( !fs.existsSync( config.sprite.commonDirFull ) ) {
-          config.sprite.commonDirFull = null;
+        if ( !fs.existsSync( config.spritesmith.commonDirFull ) ) {
+          config.spritesmith.commonDirFull = null;
         }
       }
     }
 
-    if ( validators.ifExistsIsString( errors, "sprite.outDir", config.sprite.outDir ) ) {
-      config.sprite.outDirFull = path.join( config.watch.sourceDir, config.sprite.outDir );
+    if ( validators.ifExistsIsString( errors, "spritesmith.outDir", config.spritesmith.outDir ) ) {
+      config.spritesmith.outDirFull = path.join( config.watch.sourceDir, config.spritesmith.outDir );
     }
 
-    if ( validators.ifExistsIsString( errors, "sprite.stylesheetOutDir", config.sprite.stylesheetOutDir ) ) {
-      config.sprite.stylesheetOutDirFull = path.join( config.watch.sourceDir, config.sprite.stylesheetOutDir );
+    if ( validators.ifExistsIsString( errors, "spritesmith.stylesheetOutDir", config.spritesmith.stylesheetOutDir ) ) {
+      config.spritesmith.stylesheetOutDirFull = path.join( config.watch.sourceDir, config.spritesmith.stylesheetOutDir );
     }
 
-    var o = config.sprite.options;
+    var o = config.spritesmith.options;
     if ( ( typeof o === "object" && !Array.isArray( o ) ) || ( typeof o === "function" )) {
       if ( o.stylesheet && o.stylesheet === "css" ) {
-        config.sprite.isCSS = true;
-        config.sprite.isStylus = false;
+        config.spritesmith.isCSS = true;
+        config.spritesmith.isStylus = false;
       }
     } else {
-      errors.push( "sprite.options must be an object or a function" );
+      errors.push( "spritesmith.options must be an object or a function" );
     }
 
   }

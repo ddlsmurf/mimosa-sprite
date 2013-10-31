@@ -25,12 +25,12 @@ var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
   var spriteFileName = folderName + ".png";
 
   // out file for sprite images
-  var spriteOutFile = path.join( mimosaConfig.sprite.outDirFull, spriteFileName );
+  var spriteOutFile = path.join( mimosaConfig.spritesmith.outDirFull, spriteFileName );
 
   // out file stylesheets
-  var stylesheetOutFile = path.join( mimosaConfig.sprite.stylesheetOutDirFull, folderName );
+  var stylesheetOutFile = path.join( mimosaConfig.spritesmith.stylesheetOutDirFull, folderName );
 
-  if (mimosaConfig.sprite.isStylus) {
+  if (mimosaConfig.spritesmith.isStylus) {
     stylesheetOutFile = stylesheetOutFile + ".styl";
   } else {
     stylesheetOutFile = stylesheetOutFile + ".css";
@@ -42,15 +42,15 @@ var _buildSpriteConfig = function ( mimosaConfig, folderPath ) {
     stylesheetPath: stylesheetOutFile.replace(mimosaConfig.root + path.sep, "")
   };
 
-  if (mimosaConfig.sprite.commonDirFull) {
-    nsgConfig.src.push(path.join(mimosaConfig.sprite.commonDirFull, "*.png").replace(mimosaConfig.root + path.sep, ""));
+  if (mimosaConfig.spritesmith.commonDirFull) {
+    nsgConfig.src.push(path.join(mimosaConfig.spritesmith.commonDirFull, "*.png").replace(mimosaConfig.root + path.sep, ""));
   }
 
   // perform overrides
-  if ( typeof mimosaConfig.sprite.options === 'function') {
-    mimosaConfig.sprite.options(nsgConfig);
+  if ( typeof mimosaConfig.spritesmith.options === 'function') {
+    mimosaConfig.spritesmith.options(nsgConfig);
   } else {
-    nsgConfig = _.extend(nsgConfig, mimosaConfig.sprite.options);
+    nsgConfig = _.extend(nsgConfig, mimosaConfig.spritesmith.options);
   }
 
   _makeDirectory( path.dirname( spriteOutFile ) );
@@ -112,18 +112,18 @@ var _runSpriteGenerator = function ( generatorConfig, cb ) {
 };
 
 var _getAllSpriteConfigs = function ( mimosaConfig ) {
-  var configs = wrench.readdirSyncRecursive( mimosaConfig.sprite.inDirFull ).map( function( shortPath ) {
+  var configs = wrench.readdirSyncRecursive( mimosaConfig.spritesmith.inDirFull ).map( function( shortPath ) {
     // build full path
-    return path.join(mimosaConfig.sprite.inDirFull, shortPath);
+    return path.join(mimosaConfig.spritesmith.inDirFull, shortPath);
   }).filter( function filterDir( fullpath ) {
     // only care about directories
     return fs.statSync(fullpath).isDirectory();
   }).filter( function filterRootDir( fullpath ) {
     // only care about root directories
-    return (path.dirname(fullpath) === mimosaConfig.sprite.inDirFull);
+    return (path.dirname(fullpath) === mimosaConfig.spritesmith.inDirFull);
   }).filter( function filterCommon( fullpath ) {
     // no common directory
-    return (fullpath !== mimosaConfig.sprite.commonDirFull);
+    return (fullpath !== mimosaConfig.spritesmith.commonDirFull);
   }).filter( function filterNoFiles( fullpath ) {
     // remove any folders that have no files in them
     var folderFiles = wrench.readdirSyncRecursive( fullpath ).map( function( shortPath ) {
@@ -148,8 +148,8 @@ var _getAllSpriteConfigs = function ( mimosaConfig ) {
 
 var _generateSprites = function ( mimosaConfig, next ) {
 
-  if ( !fs.existsSync( mimosaConfig.sprite.inDirFull ) ) {
-    logger.error( "Could not find sprite.inDir directory at [[ " + mimosaConfig.sprite.inDirFull + " ]]" );
+  if ( !fs.existsSync( mimosaConfig.spritesmith.inDirFull ) ) {
+    logger.error( "Could not find spritesmith.inDir directory at [[ " + mimosaConfig.spritesmith.inDirFull + " ]]" );
     if ( next ) {
       next();
     }
@@ -158,11 +158,11 @@ var _generateSprites = function ( mimosaConfig, next ) {
 
   var configs = _getAllSpriteConfigs( mimosaConfig );
   if (configs.length > 0) {
-    _makeDirectory( mimosaConfig.sprite.stylesheetOutDirFull );
+    _makeDirectory( mimosaConfig.spritesmith.stylesheetOutDirFull );
   }
-  var templates = ((mimosaConfig.sprite.options || {}).json2css || {}).templates;
+  var templates = ((mimosaConfig.spritesmith.options || {}).json2css || {}).templates;
   if (templates) {
-    delete mimosaConfig.sprite.options.json2css.templates;
+    delete mimosaConfig.spritesmith.options.json2css.templates;
     for (var name in templates)
       if (templates.hasOwnProperty(name))
         json2css.addMustacheTemplate(name, templates[name]);
