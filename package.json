@@ -1,6 +1,6 @@
 {
   "name": "mimosa-spritesmith",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "homepage": "https://github.com/ddlsmurf/mimosa-spritesmith",
   "author": "David Bashford",
   "description": "A module for Mimosa to generate sprites and corresponding Stylus/CSS",
